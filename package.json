@@ -1,0 +1,32 @@
+{
+  "name": "qify",
+  "version": "1.0.0",
+  "description": "A silly function that turns methods on an object into chainable methods that can be queued and put on a timer",
+  "main": "index.js",
+  "scripts": {
+    "test": "jest"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hamannjames/Qify.git"
+  },
+  "keywords": [
+    "javascript",
+    "object",
+    "method",
+    "chaining",
+    "queue"
+  ],
+  "author": "James Hamann",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/hamannjames/Qify/issues"
+  },
+  "homepage": "https://github.com/hamannjames/Qify#readme",
+  "dependencies": {},
+  "devDependencies": {
+    "@babel/preset-env": "^7.12.11",
+    "babel-jest": "^26.6.3",
+    "jest": "^26.6.3"
+  }
+}
