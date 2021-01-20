@@ -4,13 +4,16 @@ export default function Qify (base) {
     throw new TypeError('Cannot instantiate Qify with type: ' + typeof base + '. Must use an object.');
   }
 
+  let  qThis;
   let readyState = true;
   const qGet = {};
   let methodQueue = [];
   let queuePointer = methodQueue;
 
   const methodHandler = function(method, args) {
+
     const qOptions = args[args.length - 1];
+    qThis = this;
       
     if (!readyState) {
       queuePointer.push({method, args, qOptions});
@@ -27,10 +30,7 @@ export default function Qify (base) {
   const waitHandler = function(mils) {
     
     if (!readyState) {
-      queuePointer.push([]);
-      queuePointer = queuePointer[queuePointer.length - 1];
-      queuePointer.push(mils);
-    
+      queuePointer = queuePointer[(queuePointer.push([mils])) - 1];
       return;
     }
   
@@ -41,39 +41,11 @@ export default function Qify (base) {
       queueHandler.call(this);
     }, mils);  
   }
-  
-  const proto = function() {
-    
-    const target = {
-      wait: function(mils) {
-        waitHandler.call(base, mils);
-        return this;
-      },
-      qGet: function(prop) {
-        return qGet[prop];
-      },
-      qLength: function() {
-        return methodQueue.length;
-      },
-      qify: function(base) {
-        return Qify(base);
-      }
-    };
-    
-    Object.keys(base).forEach(key => {
-      if (typeof base[key] === 'function') {
-        target[key] = function() {
-          methodHandler.call(base, this.__proto__[key], [...arguments]);
-          return this;
-        }
-      }
-    });
-    
-    return target;
-  }
 
   const queueHandler = function() {
+    
     while(methodQueue.length) {
+
       const nextMethod = methodQueue.shift();
     
       if (Array.isArray(nextMethod)) {
@@ -98,6 +70,7 @@ export default function Qify (base) {
       
       resultHandler.call(this, nextMethod.method.bind(this, ...nextMethod.args), nextMethod.qOptions);
     }
+    
   }
 
   const resultHandler = function(method, options) {
@@ -109,6 +82,36 @@ export default function Qify (base) {
       method();
     }
   }
+
+  const proto = function() {
+    
+    const target = {
+      wait: function(mils) {
+        waitHandler.call(base, mils);
+        return this;
+      },
+      qGet: function(prop) {
+        return qGet[prop];
+      },
+      qLength: function() {
+        return methodQueue.length;
+      },
+      qify: function(base) {
+        return Qify(base);
+      }
+    };
+    
+    Object.getOwnPropertyNames(base).forEach(key => {
+      if (typeof base[key] === 'function') {
+        target[key] = function() {
+          methodHandler.call(base, this.__proto__[key], [...arguments]);
+          return this;
+        }
+      }
+    });
+    
+    return target;
+  }
   
-  return Object.assign(Object.setPrototypeOf({}, base), proto());
+  return Object.assign(Object.create(base), proto());
 }
